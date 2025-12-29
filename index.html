@@ -87,6 +87,8 @@ button:hover{background:#1e3c72}
     <h3>Registrar horas</h3>
     <input type="date" id="day" />
     <input type="time" id="entrada" />
+    <input type="time" id="almocoInicio" />
+    <input type="time" id="almocoFim" />
     <input type="time" id="saida" />
     <button onclick="saveHours()">Salvar</button>
   </div>
@@ -166,6 +168,8 @@ function saveHours(){
   if(!data.hours[u]) data.hours[u] = {};
   data.hours[u][d] = {
     entrada: entrada.value,
+    almocoInicio: almocoInicio.value,
+    almocoFim: almocoFim.value,
     saida: saida.value
   };
   saveData();
@@ -182,7 +186,7 @@ function loadHistory(){
     const h = data.hours[u][d];
     const div = document.createElement('div');
     div.className='item';
-    div.innerText = `${d} | Entrada: ${h.entrada} | Saída: ${h.saida}`;
+    div.innerText = `${d} | Entrada: ${h.entrada} | Almoço: ${h.almocoInicio} - ${h.almocoFim} | Saída: ${h.saida}`;
     historyList.appendChild(div);
   });
 }

@@ -1,121 +1,144 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Controle de Jornada 8h48</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      padding: 20px;
-    }
-    .container {
-      max-width: 900px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      color: #1F4E78;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-    }
-    th {
-      background: #1F4E78;
-      color: #fff;
-    }
-    input[type="time"], input[type="date"] {
-      width: 100%;
-      border: none;
-      text-align: center;
-    }
-    tfoot td {
-      font-weight: bold;
-      background: #eef2f6;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Controle de Usuários</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+body{
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg,#2c3e50,#3498db);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0;
+}
+.card{
+  background:#fff;
+  padding:25px;
+  border-radius:12px;
+  width:100%;
+  max-width:420px;
+  box-shadow:0 10px 25px rgba(0,0,0,.25);
+}
+h2{text-align:center;margin-top:0}
+input,button{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+button{
+  background:#3498db;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+}
+button:hover{background:#2980b9}
+.hidden{display:none}
+.calendar{
+  margin-top:15px;
+  text-align:center;
+}
+.calendar h3{margin-bottom:10px}
+.days{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:5px;
+}
+.day{
+  background:#ecf0f1;
+  padding:8px 0;
+  border-radius:6px;
+  font-size:14px;
+}
+.logout{
+  background:#e74c3c;
+  margin-top:15px;
+}
+.logout:hover{background:#c0392b}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Controle de Jornada – 8h48</h1>
 
-    <table id="tabela">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Entrada</th>
-          <th>Saída Almoço</th>
-          <th>Volta Almoço</th>
-          <th>Saída</th>
-          <th>Horas do Dia</th>
-        </tr>
-      </thead>
-      <tbody id="corpo"></tbody>
-      <tfoot>
-        <tr>
-          <td colspan="5">Total do Mês</td>
-          <td id="total">00:00</td>
-        </tr>
-      </tfoot>
-    </table>
+<div class="card" id="loginCard">
+  <h2>Login</h2>
+  <input id="user" placeholder="Usuário" />
+  <input id="pass" type="password" placeholder="Senha" />
+  <button onclick="login()">Entrar</button>
+</div>
+
+<div class="card hidden" id="appCard">
+  <h2 id="welcome"></h2>
+  <div class="calendar">
+    <h3 id="month"></h3>
+    <div class="days" id="days"></div>
   </div>
+  <button class="logout" onclick="logout()">Sair</button>
+</div>
 
-  <script>
-    const corpo = document.getElementById('corpo');
-    const totalCell = document.getElementById('total');
+<script>
+// usuários (exemplo)
+const users = {
+  joao: '1234',
+  maria: 'abcd'
+};
 
-    function calcularHoras(linha) {
-      const inputs = linha.querySelectorAll('input[type="time"]');
-      if ([...inputs].some(i => !i.value)) return;
+const loginCard = document.getElementById('loginCard');
+const appCard = document.getElementById('appCard');
 
-      const [entrada, saidaAlmoco, voltaAlmoco, saida] = [...inputs].map(i => new Date(`1970-01-01T${i.value}:00`));
+function login(){
+  const u = user.value.trim();
+  const p = pass.value.trim();
 
-      let minutos = ((saida - voltaAlmoco) + (saidaAlmoco - entrada)) / 60000;
-      if (minutos < 0) minutos += 1440;
+  if(users[u] && users[u] === p){
+    localStorage.setItem('loggedUser', u);
+    loadApp();
+  }else{
+    alert('Usuário ou senha inválidos');
+  }
+}
 
-      const h = Math.floor(minutos / 60);
-      const m = minutos % 60;
+function logout(){
+  localStorage.removeItem('loggedUser');
+  location.reload();
+}
 
-      linha.querySelector('.horas').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-      calcularTotal();
-    }
+function loadApp(){
+  const u = localStorage.getItem('loggedUser');
+  if(!u) return;
 
-    function calcularTotal() {
-      let totalMin = 0;
-      document.querySelectorAll('.horas').forEach(c => {
-        if (c.innerText !== '') {
-          const [h, m] = c.innerText.split(':').map(Number);
-          totalMin += h * 60 + m;
-        }
-      });
-      const h = Math.floor(totalMin / 60);
-      const m = totalMin % 60;
-      totalCell.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-    }
+  loginCard.classList.add('hidden');
+  appCard.classList.remove('hidden');
+  welcome.innerText = `Bem-vindo, ${u}`;
 
-    for (let i = 0; i < 22; i++) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><input type="date"></td>
-        <td><input type="time" onchange="calcularHoras(this.closest('tr'))"></td>
-        <td><input type="time" onchange="calcularHoras(this.closest('tr'))"></td>
-        <td><input type="time" onchange="calcularHoras(this.closest('tr'))"></td>
-        <td><input type="time" onchange="calcularHoras(this.closest('tr'))"></td>
-        <td class="horas"></td>
-      `;
-      corpo.appendChild(tr);
-    }
-  </script>
+  buildCalendar();
+}
+
+function buildCalendar(){
+  const now = new Date();
+  const year = now.getFullYear();
+  const monthIndex = now.getMonth();
+
+  const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  month.innerText = `${monthNames[monthIndex]} ${year}`;
+
+  days.innerHTML='';
+  const totalDays = new Date(year, monthIndex + 1, 0).getDate();
+
+  for(let i=1;i<=totalDays;i++){
+    const d = document.createElement('div');
+    d.className='day';
+    d.innerText=i;
+    days.appendChild(d);
+  }
+}
+
+loadApp();
+</script>
+
 </body>
 </html>

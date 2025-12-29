@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Controle de Jornada 8h48</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #1F4E78;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: #1F4E78;
+      color: #fff;
+    }
+    input[type="time"], input[type="date"] {
+      width: 100%;
+      border: none;
+      text-align: center;
+    }
+    tfoot td {
+      font-weight: bold;
+      background: #eef2f6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Controle de Jornada – 8h48</h1>
+
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Entrada</th>
+          <th>Saída Almoço</th>
+          <th>Volta Almoço</th>
+          <th>Saída</th>
+          <th>Horas do Dia</th>
+        </tr>
+      </thead>
+      <tbody id="corpo"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5">Total do Mês</td>
+          <td id="total">00:00</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <script>
+    const corpo = document.getElementById('corpo');
+    const totalCell = document.getElementById('total');
+
+    function calcularHoras(linha) {
+      const inputs = linha.querySelectorAll('input[type="time"]');
+      if ([...inputs].some(i => !i.value)) return;
+
+      const [entrada, saidaAlmoco, voltaAlmoco, saida] = [...inputs].map(i => new Date(`1970-01-01T${i.value}:00`));
+
+      let minutos = ((saida - voltaAlmoco) + (saidaAlmoco - entrada)) / 60000;
+      if (minutos < 0) minutos += 1440;
+
+      const h = Math.floor(minutos / 60);
+      const m = minutos % 60;
+
+      linha.querySelector('.horas').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      calcularTotal();
+    }
+
+    function calcularTotal() {
+      let totalMin = 0;
+      document.querySelectorAll('.horas').forEach(c => {
+        if (c.innerText !== '') {
+          const [h, m] = c.innerText.split(':').map(Number);
+          totalMin += h * 60 + m;
+        }
+      });
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      totalCell.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    }
+
+    for (let i = 0; i < 22; i++) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="date"></td>
+        <td><input type="time" onchange="calcularHoras(this.closest('tr'))"></td>
+        <td><input type="time" onchange="calcularHoras(this.closest('tr'))"></td>
+        <td><input type="time" onchange="calcularHoras(this.closest('tr'))"></td>
+        <td><input type="time" onchange="calcularHoras(this.closest('tr'))"></td>
+        <td class="horas"></td>
+      `;
+      corpo.appendChild(tr);
+    }
+  </script>
+</body>
+</html>
